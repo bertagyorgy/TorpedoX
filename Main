@@ -1,0 +1,102 @@
+import random
+import os
+import time
+
+# Felső tábla mérete és hajók száma
+board_size = 5
+ship_count = 5
+
+# Felső és alsó tábla inicializálása
+player_board = [["." for _ in range(board_size)] for _ in range(board_size)]
+enemy_board = [["." for _ in range(board_size)] for _ in range(board_size)]
+
+print("-----Üdvözöllek a TorpedoX nevű játékban!-----\n")
+print("Célod az, hogy elsüllyeszd az ellenség összes hajóját.\n")
+print("--------Sok sikert kívánok a játékhoz!--------")
+time.sleep(7)
+os.system("clear")
+nev = input("\nKérlek add meg a neved: ")
+os.system("clear")
+# Hajók elhelyezése a felső táblán
+for _ in range(ship_count):
+    while True:
+        x, y = map(int, input(f"\nAdd meg a(z) {_ + 1}. hajó koordinátáját (x és y között szóközzel): ").split())
+        time.sleep(1)
+        os.system("clear")
+        if player_board[x - 1][y - 1] == ".":
+            player_board[x - 1][y - 1] = "1"
+            break
+        else:
+            print("Ez a koordináta már foglalt!")
+
+# Ellenséges hajók elhelyezése a alsó táblán (random generálás)
+enemy_ships = random.sample([(x, y) for x in range(board_size) for y in range(board_size)], ship_count)
+for x, y in enemy_ships:
+    enemy_board[x][y] = "X"
+
+# Játék kezdete
+print("Hajók elhelyezve a felső táblán. Kezdődjön a játék!")
+time.sleep(2)
+os.system("clear")
+
+def display_enemy_board(board):
+    """A függvény megjeleníti az ellenség táblát, de elrejti a hajók helyét."""
+    for x in range(board_size):
+        for y in range(board_size):
+            if board[x][y] in ["T", "O"]:
+                print(board[x][y], end=" ")
+            else:
+                print(".", end=" ")
+        print()
+
+while True:
+    # Felső tábla megjelenítése
+    os.system("clear")  # Törli a korábbi kimenetet
+    print(nev)
+    for row in player_board:
+        print(" ".join(row))
+
+    # Alsó tábla megjelenítése (csak az ellenség táblájának tartalmával)      
+    print("_ " * int(board_size+1))
+    print("Bot")
+    display_enemy_board(enemy_board)
+
+    # Lövés koordinátáinak bekérése a játékos részéről
+    target_x, target_y = map(int, input("\nLövés koordinátái (x és y között szóközzel): ").split())
+    os.system("clear")
+    # Ellenőrzés, hogy talált-e az ellenséges hajóra
+    if (target_x - 1, target_y - 1) in enemy_ships:
+        print("Találtál egy ellenséges hajót!")
+        enemy_board[target_x - 1][target_y - 1] = "T"
+    else:
+        print("Mellé lőttél!")
+        enemy_board[target_x - 1][target_y - 1] = "O"
+
+    # Ellenőrzés, hogy megvan-e az összes ellenséges hajó
+    if all(enemy_board[x][y] in ["T", "O"] for x, y in enemy_ships):
+        os.system("clear")  # Törli a korábbi kimenetet
+        print("Gratulálok! Megtaláltad az összes ellenséges hajót. Győztél!")
+        break
+
+    # Ellenség táblájára irányuló rákérdezés
+    while True:
+        enemy_target_x, enemy_target_y = random.randint(0, board_size - 1), random.randint(0, board_size - 1)
+        if player_board[enemy_target_x][enemy_target_y] not in ["T", "O"]:
+            break
+
+    # Ellenőrzés, hogy talált-e a program az ön hajóira
+    if player_board[enemy_target_x][enemy_target_y] == "1":
+        print("Az ellenség eltalálta egy hajódat!")
+        player_board[enemy_target_x][enemy_target_y] = "T"
+    else:
+        print("Az ellenség mellé lőtt!")
+        player_board[enemy_target_x][enemy_target_y] = "O"
+
+    # Várakozás, hogy a játékos láthassa az ellenség lépését
+    input("Nyomj Enter-t az ellenfél lépésének megtekintéséhez...")
+
+    # Ellenőrzés, hogy megvan-e az összes saját hajó
+    if all(player_board[x][y] in ["T", "O"] for x in range(board_size) for y in range(board_size) if player_board[x][y] == "1"):
+        os.system("clear")  # Törli a korábbi kimenetet
+        print("Az ellenfél megsemmisítette az összes hajódat. Vesztettél!")
+        break
